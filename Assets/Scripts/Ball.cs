@@ -7,8 +7,10 @@ using Random = UnityEngine.Random;
 public class Ball : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private GameObject fire;
     [SerializeField] private float speed, increasedSpeed;
     [SerializeField] private float timeWindow; // Tiempo de reaccion para pulsar Espacio
+    [SerializeField] private float rotationSpeed = 45f;
     private Vector2 startPos;
     private float minSpeed = 0.5f;
     private float deltaSpeed = 0.5f;    
@@ -30,9 +32,12 @@ public class Ball : MonoBehaviour
             if (Time.time <= collisionTime + timeWindow)
             {
                 IncreaseSpeed();
+                fire.GetComponent<SpriteRenderer>().enabled = true;
             }
             canIncreaseSpeed = false;
         }
+
+        fire.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg + 90);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -45,6 +50,16 @@ public class Ball : MonoBehaviour
 
             collisionTime = Time.time;
         }
+
+        Vector2 direccionColision = collision.contacts[0].normal;
+
+        // Calcular el vector perpendicular a la dirección de la colisión y la direccion de la bola
+        float angulo = Vector2.SignedAngle(direccionColision, rb.velocity);
+
+        // Aplicar la rotación
+        rb.angularVelocity = rotationSpeed * Mathf.Sign(angulo);
+
+        
     }
 
     private void Launch()
@@ -71,6 +86,10 @@ public class Ball : MonoBehaviour
     public void Reset()
     {
         rb.position = startPos;
+        rb.rotation = 0f;
+        rb.angularVelocity = 0f;
+        rotationSpeed = 45f;
+        fire.GetComponent<SpriteRenderer>().enabled = false;
         Launch();
     }
 
@@ -78,5 +97,6 @@ public class Ball : MonoBehaviour
     {
         Vector2 direction = rb.velocity.normalized;
         rb.velocity = direction * (rb.velocity.magnitude + increasedSpeed);
+        rotationSpeed += 40f;
     }
 }
