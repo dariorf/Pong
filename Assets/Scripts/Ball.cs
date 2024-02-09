@@ -9,13 +9,10 @@ public class Ball : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GameObject fire;
     [SerializeField] private float speed, increasedSpeed;
-    [SerializeField] private float timeWindow; // Tiempo de reaccion para pulsar Espacio
     [SerializeField] private float rotationSpeed = 45f;
     private Vector2 startPos;
     private float minSpeed = 0.5f;
-    private float deltaSpeed = 0.5f;    
-    private bool canIncreaseSpeed = false;
-    private float collisionTime;
+    private float deltaSpeed = 0.5f;
 
     // Start is called before the first frame update
     void Start()
@@ -27,29 +24,12 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (canIncreaseSpeed && Input.GetKeyDown(KeyCode.Space))
-        {
-            if (Time.time <= collisionTime + timeWindow)
-            {
-                IncreaseSpeed();
-                fire.GetComponent<SpriteRenderer>().enabled = true;
-            }
-            canIncreaseSpeed = false;
-        }
-
         fire.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg + 90);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            Adjust();
-
-            canIncreaseSpeed = true;
-
-            collisionTime = Time.time;
-        }
+        Adjust();
 
         Vector2 direccionColision = collision.contacts[0].normal;
 
@@ -58,8 +38,6 @@ public class Ball : MonoBehaviour
 
         // Aplicar la rotación
         rb.angularVelocity = rotationSpeed * Mathf.Sign(angulo);
-
-        
     }
 
     private void Launch()
@@ -93,10 +71,11 @@ public class Ball : MonoBehaviour
         Launch();
     }
 
-    private void IncreaseSpeed()
+    public void IncreaseSpeed()
     {
         Vector2 direction = rb.velocity.normalized;
         rb.velocity = direction * (rb.velocity.magnitude + increasedSpeed);
         rotationSpeed += 40f;
+        fire.GetComponent<SpriteRenderer>().enabled = true;
     }
 }

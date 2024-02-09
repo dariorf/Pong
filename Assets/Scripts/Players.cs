@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class Players : MonoBehaviour
 {
+    [SerializeField] private GameObject rival, ball;
     [SerializeField] private bool isPlayerLeft;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private float speed;
     private Vector2 startPos;
     private float movement;
+    private bool canHit = true;
 
     // Start is called before the first frame update
     void Start()
@@ -34,5 +36,23 @@ public class Players : MonoBehaviour
     public void Reset()
     {
         rb.position = startPos;
+        canHit = true;
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Ball") && canHit && Input.GetKey(KeyCode.Space)) 
+        {            
+            canHit = false;
+            rival.GetComponent<Players>().canHit = true;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!canHit)
+        {
+            ball.GetComponent<Ball>().IncreaseSpeed();
+        }
     }
 }
