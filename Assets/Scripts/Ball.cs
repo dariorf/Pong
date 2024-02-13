@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,6 +5,7 @@ public class Ball : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GameObject fire;
+    [SerializeField] private AudioSource bounce;
     [SerializeField] private float speed, increasedSpeed;
     [SerializeField] private float rotationSpeed = 45f;
     private Vector2 startPos;
@@ -24,7 +22,10 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        fire.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg + 90);
+        if (fire.GetComponent<SpriteRenderer>().isVisible) { 
+            fire.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg + 90);
+        }
+        // COmprobar que esté dentro de los limites
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -38,6 +39,11 @@ public class Ball : MonoBehaviour
 
         // Aplicar la rotación
         rb.angularVelocity = rotationSpeed * Mathf.Sign(angulo);
+
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            bounce.Play();
+        }
     }
 
     private void Launch()
@@ -68,6 +74,7 @@ public class Ball : MonoBehaviour
         rb.angularVelocity = 0f;
         rotationSpeed = 45f;
         fire.GetComponent<SpriteRenderer>().enabled = false;
+        fire.GetComponent<AudioSource>().Stop();
         Launch();
     }
 
@@ -77,5 +84,14 @@ public class Ball : MonoBehaviour
         rb.velocity = direction * (rb.velocity.magnitude + increasedSpeed);
         rotationSpeed += 40f;
         fire.GetComponent<SpriteRenderer>().enabled = true;
+        if (!fire.GetComponent<AudioSource>().isPlaying)
+        {
+            fire.GetComponent<AudioSource>().Play();
+        }        
+    }
+
+    public void ReduceSpeed()
+    {
+        rb.velocity = rb.velocity.normalized;
     }
 }
